@@ -22,7 +22,7 @@ class Spotify_Data():
                                                            client_secret=CLIENT_SECRET))
         
         
-    def get_artist_id(self, artist: str, start_idx:int = 0) -> pd.DataFrame:
+    def get_artist_id(self, artist: str, start_idx: int = 0) -> pd.DataFrame:
         '''Returns the dataframe with artist ID, popularity, and genre for input artist name'''       
         # Return top search results for artist
         search_df: pd.DataFrame = pd.DataFrame(self.sp.search(artist, offset=start_idx, type='artist'))
@@ -38,6 +38,14 @@ class Spotify_Data():
         else:
             return self.get_artist_id(artist, start_idx = start_idx + 10)
         
-    def get_albums(self, artist_id:str = None) -> pd.DataFrame:
+    def get_albums(self, artist_id: str = None) -> list:
         ''' Returns something '''
-        return self.sp.artist_albums(artist_id)
+        album_df = self.sp.artist_albums(artist_id, limit=50)
+        albums = pd.DataFrame([i for i in album_df['items']])['id'].to_list()
+        return albums
+
+    def get_album_tracks(self, album_ids: str) -> pd.DataFrame:
+        return pd.DataFrame(self.sp.album_tracks(album_ids)['items'])
+    
+    def get_audio_analysis(self, track_id: str) -> pd.DataFrame:
+        return self.sp.audio_analysis(track_id)
