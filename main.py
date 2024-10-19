@@ -2,6 +2,10 @@ from spotify_data import Spotify_Data
 from dotenv import load_dotenv
 import pandas as pd
 
+full_artist_list = ['Big Thief',
+                    'Wet Leg',
+                    ]
+
 def main():
     sd = Spotify_Data()
     print(pd.DataFrame(sd.get_tracks('wetleg')['tracks']))
@@ -13,15 +17,6 @@ def main():
 # Initialize class
 sd = Spotify_Data()
 
-# Get ID for artist
-df = sd.get_artist_id('Big Thief')
+df_full = pd.concat([sd.build_artist_dataset(artist) for artist in full_artist_list])
 
-# Use ID to pull all albums the artist appears on 
-albums = sd.get_albums(df.loc[0,'id'])
-
-# Loop through albums to get all songs (regardless of who the artist is)
-songs = pd.DataFrame(sd.get_album_tracks(albums[0]))['id'].to_list()
-
-
-# Loop through songs to get audio analysis
-analysis = sd.get_audio_analysis(songs[0])
+df_track = df_full[df_full['track_name'] == 'C’est comme ça']
