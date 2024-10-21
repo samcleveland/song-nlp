@@ -18,5 +18,3 @@ def main():
 sd = Spotify_Data()
 
 df_full = pd.concat([sd.build_artist_dataset(artist) for artist in full_artist_list])
-
-df_track = df_full[df_full['track_name'] == 'C’est comme ça']
