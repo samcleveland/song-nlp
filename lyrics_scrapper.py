@@ -3,19 +3,46 @@ from bs4 import BeautifulSoup
 
 import re
 
-import warnings
-
-
-
-
 
 class Lyric_Scrapper():
     def __init__(self, artist: str, song: str):
         self.artist = artist.lower()
         self.song = song.lower()
         
+    def clean_title(self, title_part:str) -> str:
+        '''
+        Removes punctuation from artist name or song name
+
+        Parameters
+        ----------
+        title_part : str
+            Artist's name or song name
+
+        Returns
+        -------
+        str
+            Artist's name or song name without punctuation
+
+        '''
+        title_part = re.sub(r"[,!.\{}\[\]\\\()|@#$%^&*+=:;?/<>_'—\"]", "", title_part) #remove any symbols in the name
+        title_part = title_part.replace(' ','-') # replace spaces with dashes
+        
+        return title_part
+        
     def lyric_call(self) -> None:
-        page = requests.get(f"https://genius.com/{self.artist.replace(' ','-')}-{self.song.replace(' ','-')}-lyrics")
+        '''
+        Requests genius lyrics for specified song. 
+
+        Returns
+        -------
+        None
+            DESCRIPTION.
+
+        '''
+        self.artist_clean = self.clean_title(self.artist)
+        self.song_clean = self.clean_title(self.song)
+        
+        page = requests.get(f"https://genius.com/{self.artist_clean}-{self.song_clean}-lyrics")
         soup = BeautifulSoup(page.content, "html.parser")
         results = soup.find(id="lyrics-root")
         self.lyrics = results.text
@@ -78,25 +105,24 @@ class Lyric_Scrapper():
         # remove tour ads
         self.lyrics = re.sub(fr"(?i)see {self.artist} live get tickets as low as \$\d+ you might also like", "", self.lyrics)
         
-    
-    
-l1 = Lyric_Scrapper('big thief', 'change')
-l1.lyric_call()
-l1_span = l1.cleaning_lyrics()
-l1_text = l1.lyrics
-
-l2 = Lyric_Scrapper('olivia rodrigo', 'pretty isnt pretty')
-l2.lyric_call()
-l2.cleaning_lyrics()
-l2_text = l2.lyrics
-
-l3 = Lyric_Scrapper('chappell roan', 'pink pony club')
-l3.lyric_call()
-l3.cleaning_lyrics()
-l3_text = l3.lyrics
-
-l4 = Lyric_Scrapper('charli xcx', '365')
-l4.lyric_call()
-l4.cleaning_lyrics()
-l4_text = l4.lyrics
         
+    def write_lyrics(self) -> None:
+        with open(f"lyrics/{self.artist_clean}-{self.song_clean}.txt", "w", encoding="utf-16") as file:
+            file.write(self.lyrics)
+            
+    def get_lyrics(self) -> None:
+        '''
+        Main function that cleans artist name, downloads the songs lyrics, cleans the song lyrics and saves the lyrics into a txt file for processing later. 
+
+        Returns
+        -------
+        None
+            DESCRIPTION.
+
+        '''
+        try:
+            self.lyric_call()
+            self.cleaning_lyrics()
+            self.write_lyrics()
+        except:
+            print(f'{self.artist} - {self.song} failed')
