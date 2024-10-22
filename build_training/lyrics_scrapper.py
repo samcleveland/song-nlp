@@ -24,6 +24,7 @@ class Lyric_Scrapper():
             Artist's name or song name without punctuation
 
         '''
+        
         title_part = re.sub(r"[,!.\{}\[\]\\\()|@#$%^&*+=:;?/<>_’'—\"]", "", title_part) #remove any symbols in the name
         title_part = title_part.replace(' ','-') # replace spaces with dashes
         title_part = title_part.replace('---','-') # replace triple dash with single dash
