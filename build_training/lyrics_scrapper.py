@@ -24,8 +24,10 @@ class Lyric_Scrapper():
             Artist's name or song name without punctuation
 
         '''
-        title_part = re.sub(r"[,!.\{}\[\]\\\()|@#$%^&*+=:;?/<>_'—\"]", "", title_part) #remove any symbols in the name
+        title_part = re.sub(r"[,!.\{}\[\]\\\()|@#$%^&*+=:;?/<>_’'—\"]", "", title_part) #remove any symbols in the name
         title_part = title_part.replace(' ','-') # replace spaces with dashes
+        title_part = title_part.replace('---','-') # replace triple dash with single dash
+        title_part = title_part.replace('--','-') # replace double dash with single dash
         
         return title_part
         
@@ -91,7 +93,7 @@ class Lyric_Scrapper():
         self.lyrics = ' '.join(self.lyrics[1:])
         
         # Remove post-lyric footers
-        self.lyrics = re.sub(r"[0-9]Embed", '', self.lyrics)
+        self.lyrics = re.sub(r"(\d+)Embed", '', self.lyrics)
         
         # replace everything between [] with a space
         self.lyrics = re.sub(r"\[.{1,15}]", ' ', self.lyrics)
@@ -107,10 +109,10 @@ class Lyric_Scrapper():
         
         
     def write_lyrics(self) -> None:
-        with open(f"lyrics/{self.artist_clean}-{self.song_clean}.txt", "w", encoding="utf-16") as file:
+        with open(f"../lyrics/{self.artist_clean}-{self.song_clean}.txt", "w", encoding="utf-16") as file:
             file.write(self.lyrics)
             
-    def get_lyrics(self) -> None:
+    def get_lyrics(self) -> str:
         '''
         Main function that cleans artist name, downloads the songs lyrics, cleans the song lyrics and saves the lyrics into a txt file for processing later. 
 
@@ -124,5 +126,7 @@ class Lyric_Scrapper():
             self.lyric_call()
             self.cleaning_lyrics()
             self.write_lyrics()
+            return f'{self.artist_clean} - {self.song_clean}.txt'
         except:
-            print(f'{self.artist} - {self.song} failed')
+            print(f'{self.artist_clean} - {self.song_clean} failed')
+            return None
