@@ -28,7 +28,7 @@ class Spotify_Data():
         search_df: pd.DataFrame = pd.DataFrame(self.sp.search(artist, offset=start_idx, type='artist'))
         
         # Filter dataframe down to only artist info
-        artist_df: pd.DataFrame = pd.DataFrame(search_df.loc['items',:][0])
+        artist_df: pd.DataFrame = pd.DataFrame(search_df.loc['items',:].iloc[0])
         artist_df['name'] = artist_df['name'].apply(lambda row: row.lower())
         
         if len(artist_df[artist_df.name == artist.lower()]) == 1:
