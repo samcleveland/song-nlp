@@ -67,7 +67,7 @@ class Lyric_Scrapper():
         Returns
             str
         '''
-        lyrics = ' '.join([lyrics[:split_idx], lyrics[split_idx:]])
+        lyrics = '. '.join([lyrics[:split_idx], lyrics[split_idx:]])
         try:
             return self.separate_conjoined_words(lyrics, 
                                                  re.search(r"[a-z0-9'?,\)][A-Z]", 
@@ -99,6 +99,12 @@ class Lyric_Scrapper():
         # replace everything between [] with a space
         self.lyrics = re.sub(r"\[.{1,15}]", ' ', self.lyrics)
         
+        # replace everything between [] with a space
+        self.lyrics = re.sub(r"\[.{15,25}]", ' ', self.lyrics)
+        
+        # replace everything between [] with a space
+        self.lyrics = re.sub(r"\[.{25,45}]", ' ', self.lyrics)
+        
         # add space between words on different lines
         ## webscrapper combines word at the end of the line with the first word on the next line        
         self.lyrics = self.separate_conjoined_words(self.lyrics, 
@@ -111,7 +117,8 @@ class Lyric_Scrapper():
         
     def write_lyrics(self) -> None:
         with open(f"../lyrics/{self.artist_clean}-{self.song_clean}.txt", "w", encoding="utf-16") as file:
-            file.write(self.lyrics)
+            file.write(self.lyrics) 
+            file.close()
             
     def get_lyrics(self) -> str:
         '''
