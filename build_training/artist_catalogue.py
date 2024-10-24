@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import pandas as pd
 
 from lyrics_scrapper import Lyric_Scrapper
+from nlp import NLP
 
 full_artist_list = ['Big Thief',
                     'Wet Leg',
@@ -30,9 +31,16 @@ def main():
         
     df_full['lyric_location'] = lyrics_list
     
+    # remove songs that don't have lyrics
+    df_songs_with_lyrics = df_full[~df_full['lyric_location'].isna()].copy()
+    
+    song_nlp = NLP(song_data = df_songs_with_lyrics)
+    df_songs_with_lyrics = song_nlp.nlp_songs()
+    
     # Save spotify data
-    df_full[~df_full['lyric_location'].isna()].to_csv('spotify_artist_info.csv', index=False)
+    df_songs_with_lyrics.to_csv('spotify_artist_info.csv', index=False)
     
 if __name__ == "__main__":
     main()
+
 
