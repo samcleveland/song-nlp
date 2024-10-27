@@ -38,24 +38,36 @@ class NLP():
     def song_sentiment_analysis(self, lyrics:list) -> pd.DataFrame:
         classifier = pipeline("text-classification", top_k=None)
         
-        sentiment = classifier(lyrics)
+        sentiment = []
         
-        return pd.DataFrame([self.clean_emotion_dict(song) for song in sentiment])
+        for lyric in lyrics:
+            try:
+                sentiment.append(classifier(lyric))
+            except:
+                sentiment.append(None)
+        
+        return pd.DataFrame([self.clean_emotion_dict(song) if song is not None else None for song in sentiment])
         
     
     def song_emotion_analysis(self, lyrics:list) -> pd.DataFrame:
         classifier = pipeline("text-classification", model="j-hartmann/emotion-english-distilroberta-base", top_k=None)
         
-        emotion_list = classifier(lyrics)
+        emotion_list = []
         
-        return pd.DataFrame([self.clean_emotion_dict(song) for song in emotion_list])
+        for lyric in lyrics:
+            try:
+                emotion_list.append(classifier(lyric))
+            except:
+                emotion_list.append(None)
+        
+        return pd.DataFrame([self.clean_emotion_dict(song) if song is not None else None for song in emotion_list])
     
     def clean_emotion_dict(self, emtions_dict:dict) -> dict:
         
         return {emotion['label']:emotion['score'] for emotion in emtions_dict}
     
     def token_length_lyrics(self, lyrics:list) -> list:
-        classifier = pipeline("text-classification", top_k=None)
+        classifier = pipeline("text-classification", model="j-hartmann/emotion-english-distilroberta-base")
         tokenizer = classifier.tokenizer
         
         return [len(tokenizer.tokenize(song)) for song in lyrics]
@@ -64,19 +76,19 @@ class NLP():
     def nlp_songs(self) -> pd.DataFrame:
         song_lyrics = self.load_lyrics(self.song_data['lyric_location'])
         
-        song_lyrics['token_count'] = self.token_length_lyrics(song_lyrics['lyrics'].to_list())
-        scoreable_song_lyrics = song_lyrics[song_lyrics['token_count'] < 500].copy().reset_index().rename({'index':'song'}, axis=1)
-    
-        scoreable_song_lyrics = scoreable_song_lyrics.merge(self.song_sentiment_analysis(scoreable_song_lyrics['lyrics'].to_list()),
+
+        
+        scoreable_song_lyrics = song_lyrics.merge(self.song_sentiment_analysis(song_lyrics['lyrics'].to_list()),
                                                             how='left',
                                                             left_index=True,
                                                             right_index=True)
         
-        scoreable_song_lyrics = scoreable_song_lyrics.merge(self.song_emotion_analysis(scoreable_song_lyrics['lyrics'].to_list()),
-                                                            how='left',
-                                                            left_index=True,
-                                                            right_index=True)
-        
+        #scoreable_song_lyrics = song_lyrics.merge(self.song_emotion_analysis(song_lyrics['lyrics'].to_list()),
+        #                                                    how='left',
+        #                                                    left_index=True,
+        #                                                    right_index=True)
+
+
         return self.song_data.merge(scoreable_song_lyrics,
                                     how='left',
                                     left_on='lyric_location',

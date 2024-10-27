@@ -2,12 +2,17 @@ import requests
 from bs4 import BeautifulSoup
 
 import re
+from pathlib import Path
 
 
 class Lyric_Scrapper():
     def __init__(self, artist: str, song: str):
         self.artist = artist.lower()
         self.song = song.lower()
+        
+        self.artist_clean = self.clean_title(self.artist)
+        self.song_clean = self.clean_title(self.song)
+        
         
     def clean_title(self, title_part:str) -> str:
         '''
@@ -42,9 +47,7 @@ class Lyric_Scrapper():
             DESCRIPTION.
 
         '''
-        self.artist_clean = self.clean_title(self.artist)
-        self.song_clean = self.clean_title(self.song)
-        
+       
         page = requests.get(f"https://genius.com/{self.artist_clean}-{self.song_clean}-lyrics")
         soup = BeautifulSoup(page.content, "html.parser")
         results = soup.find(id="lyrics-root")
@@ -130,6 +133,12 @@ class Lyric_Scrapper():
             DESCRIPTION.
 
         '''
+        
+        # check if lyrics have already be scrapped
+        if Path(f"../lyrics/{self.artist_clean}-{self.song_clean}.txt").is_file():
+            return f'{self.artist_clean} - {self.song_clean}.txt'
+        
+        # if lyrics have not been scrapped - 
         try:
             self.lyric_call()
             self.cleaning_lyrics()
