@@ -6,6 +6,8 @@ from spotipy.oauth2 import SpotifyClientCredentials
 
 import pandas as pd
 
+import time
+
 
 load_dotenv()
 
@@ -38,7 +40,7 @@ class Spotify_Data():
         else:
             return self.get_artist_id(artist, start_idx = start_idx + 10)
         
-    def get_albums(self, artist_id: str = None) -> list:
+    def get_albums(self, artist_id: str = None) -> pd.DataFrame:
         ''' Returns something '''
         album_df = self.sp.artist_albums(artist_id, include_groups='album,single', limit=50)
         return pd.DataFrame([i for i in album_df['items']])
@@ -70,6 +72,7 @@ class Spotify_Data():
         '''
         
         # Get artist ID
+        print(f'{artist}')
         self.full_artist_df = self.get_artist_id(artist)[['id',
                                                           'name',
                                                           'popularity',
@@ -78,14 +81,20 @@ class Spotify_Data():
                                                           ]].rename({'id':'artist_id',
                                                                      'name':'artist_name'},
                                                                      axis=1)
-        
+
+    
         if self.full_artist_df is None:
             return pd.DataFrame()
         
+        # List of artist ID for artist's with the provided name.  Should be list of one item
         artist_list = self.full_artist_df.artist_id.unique()
+        
+        print(f'artist list: {artist_list}')
         
         # Get all albums by looping through IDs
         for art_id in artist_list:
+            
+            #Store first 50 albums for the aritst ID
             album_df = self.get_albums(art_id)[['id',
                                                 'name',
                                                 'release_date',
@@ -94,6 +103,9 @@ class Spotify_Data():
                                                 ]].rename({'id':'album_id',
                                                            'name':'album_name'},
                                                            axis=1)
+                                                           
+            print(len(album_df))
+                                               
             album_df['artist_id'] = art_id   
 
             self.full_artist_df = self.full_artist_df.merge(album_df,
@@ -103,10 +115,12 @@ class Spotify_Data():
             
             # Get all songs on each album
             album_list = album_df.album_id.unique()
+            print(f'album list: {album_list}')
             
             track_df_list = []
             
             for alb_id in album_list:
+                print(f'{alb_id}')
                 track_df = self.get_album_tracks(alb_id)[['id',
                                                           'name',
                                                           ]].rename({'id':'track_id',
@@ -121,7 +135,12 @@ class Spotify_Data():
             
             feature_df_list = []
             for chunk in range(0, len(track_df), 100):
-                feature_df_list.append(pd.DataFrame(self.sp.audio_features(track_df.track_id.to_list()[chunk:chunk+100])))
+                print(f'{chunk}')
+                try:
+                    audio_features = pd.DataFrame(self.sp.audio_features(track_df.track_id.to_list()[chunk:chunk+100]))
+                    feature_df_list.append(audio_features)
+                except:
+                    print(f'{artist} failed')
                 
             
             track_df = track_df.merge(pd.concat(feature_df_list),
@@ -134,7 +153,7 @@ class Spotify_Data():
                                                             left_on='album_id',
                                                             right_on='album_id')
             
-             
+            time.sleep(.5)
     
         return self.full_artist_df
         
