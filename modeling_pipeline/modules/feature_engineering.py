@@ -19,6 +19,7 @@ feature_map = {'NEGATIVE': 'continuous - numeric',
                  'mode': 'binary - categorical',
                  'neutral': 'continuous - numeric',
                  'popularity': 'discrete - numeric',
+
                  #'release_date': 'discrete - numeric',
                  'sadness': 'continuous - numeric',
                  'speechiness': 'continuous - numeric',

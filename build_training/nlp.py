@@ -51,7 +51,13 @@ class NLP():
             except:
                 sentiment.append([{'label':'POSITIVE', 'score':None}, {'label':'NEGATIVE', 'score':None}])
         
-        return pd.DataFrame([self.clean_emotion_dict(song) for song in sentiment])
+        for lyric in lyrics:
+            try:
+                sentiment.append(classifier(lyric))
+            except:
+                sentiment.append(None)
+        
+        return pd.DataFrame([self.clean_emotion_dict(song) if song is not None else None for song in sentiment])
         
     
     def song_emotion_analysis(self, lyrics:list) -> pd.DataFrame:
@@ -60,6 +66,7 @@ class NLP():
         emotion_list = []
         
         for lyric in lyrics:
+
             #lyric = lyric.split()
             #lyric = ' '.join(lyric[:350])
             try:
@@ -73,7 +80,7 @@ class NLP():
                                      {'label': 'surprise', 'score': None}, 
                                      {'label': 'fear', 'score': None}])
         
-        return pd.DataFrame([self.clean_emotion_dict(song) for song in emotion_list])
+        return pd.DataFrame([self.clean_emotion_dict(song) if song is not None else None for song in emotion_list])
     
     def clean_emotion_dict(self, emotion_dict_list:list) -> dict:
         
@@ -89,6 +96,7 @@ class NLP():
     def nlp_songs(self) -> pd.DataFrame:
         song_lyrics = self.load_lyrics(self.song_data['lyric_location']).reset_index().rename({'index':'Lyric Location'},axis=1)
         
+
         sent_scored_lyrics = song_lyrics.merge(self.song_sentiment_analysis(song_lyrics['lyrics'].to_list()),
                                                             how='left',
                                                             left_index=True,

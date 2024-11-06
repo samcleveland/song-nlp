@@ -105,7 +105,6 @@ class Spotify_Network():
                                      
     def crawler(self, artist_id:str, webcrawler_cap: int = 100):
         time.sleep(.5)
-       
         if len(self.visited_artists) % 10 == 0:
             print(f'{len(self.visited_artists)} / {webcrawler_cap}')
         
